@@ -29,14 +29,6 @@
 
 package cascading.jdbc.db;
 
-import java.io.IOException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileSystem;
@@ -47,10 +39,18 @@ import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.util.Progressable;
 import org.apache.hadoop.util.StringUtils;
 
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * A OutputFormat that sends the reduce output to a SQL table.
  * <p/>
- * {@link DBOutputFormat} accepts &lt;key,value&gt; pairs, where
+ * {@link cascading.jdbc.db.DBOutputFormat} accepts &lt;key,value&gt; pairs, where
  * key has a type extending DBWritable. Returned {@link RecordWriter}
  * writes <b>only the key</b> to the database with a batch SQL query.
  */
@@ -142,8 +142,11 @@ public class DBOutputFormat<K extends DBWritable, V> implements OutputFormat<K, 
 
           int count = 0;
 
-          for( int value : result )
-            count += value;
+          for( int value : result ){
+              if(updateStatement.SUCCESS_NO_INFO==value){
+                  count++;
+              }
+          }
 
           if( count != updateStatementsCurrent )
             throw new IOException( "update did not update same number of statements executed in batch, batch: " + updateStatementsCurrent + " updated: " + count );
@@ -264,7 +267,7 @@ public class DBOutputFormat<K extends DBWritable, V> implements OutputFormat<K, 
         query.append( "," );
       }
 
-    query.append( ");" );
+    query.append( ")" );
 
     return query.toString();
     }
@@ -316,7 +319,7 @@ public class DBOutputFormat<K extends DBWritable, V> implements OutputFormat<K, 
         }
       }
 
-    query.append( ";" );
+    //query.append( ";" );
 
     return query.toString();
     }
